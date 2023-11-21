@@ -16,38 +16,38 @@
     <button onclick="sendMessage()">Send</button>
 
     <script>
-    const socket = new WebSocket("ws://127.0.0.1:8888");
+        const socket = new WebSocket("ws://127.0.0.1:8888");
 
-    socket.onmessage = function (event) {
-        const chatBox = document.getElementById("chatBox");
-        chatBox.value += event.data + "\n";
-    };
+        socket.onmessage = function (event) {
+            const chatBox = document.getElementById("chatBox");
+            chatBox.value += event.data + "\n";
+        };
 
-    function joinRoom() {
-        try {
+        function joinRoom() {
             const roomInput = document.getElementById("roomInput");
             const roomName = roomInput.value.trim();
             if (roomName !== "") {
                 const joinCommand = `/join ${roomName}`;
                 socket.send(joinCommand);
-            }
-        } catch (error) {
-            console.error("Error during joinRoom:", error);
-        }
-    }
 
-    function sendMessage() {
-        try {
+                // Очищаем окно сообщений при смене комнаты
+                clearChatBox();
+            }
+        }
+
+        function sendMessage() {
             const messageInput = document.getElementById("messageInput");
             const message = messageInput.value.trim();
             if (message !== "") {
                 socket.send(message);
                 messageInput.value = "";
             }
-        } catch (error) {
-            console.error("Error during sendMessage:", error);
         }
-    }
+
+        function clearChatBox() {
+            const chatBox = document.getElementById("chatBox");
+            chatBox.value = "";
+        }
     </script>
 </body>
 </html>
