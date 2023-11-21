@@ -93,10 +93,23 @@
             background-color: #333;
             box-shadow: 0 0 10px rgba(255, 255, 255, 0.1);
         }
+        .dark-theme #chatContainer {
+            background-color: #333;
+        }
+        .dark-theme #usernameInput {
+            color: white;
+            background-color: #333;
+        }
     </style>
 </head>
 <body>
-    <div class="container">
+    <div class="container" id="authContainer">
+        <label for="usernameInput">Enter Your Name:</label>
+        <input type="text" id="usernameInput" placeholder="Your Name">
+        <button onclick="authenticate()">Join Chat</button>
+    </div>
+
+    <div class="container" id="chatContainer" style="display: none;">
         <input type="text" id="roomInput" placeholder="Enter room name">
         <button onclick="joinRoom()">Join Room</button>
         <br>
@@ -113,6 +126,19 @@
 
     <script>
         const socket = new WebSocket("ws://192.168.1.105:8888");
+        let username;
+
+        function authenticate() {
+            const usernameInput = document.getElementById("usernameInput");
+            username = usernameInput.value.trim();
+            if (username !== "") {
+                // Отправка имени пользователя на сервер
+                socket.send(`/auth ${username}`);
+                // Скрытие окна аутентификации и отображение чата
+                document.getElementById("authContainer").style.display = "none";
+                document.getElementById("chatContainer").style.display = "block";
+            }
+        }
 
         socket.onmessage = function (event) {
             const chatBox = document.getElementById("chatBox");
