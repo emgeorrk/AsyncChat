@@ -116,6 +116,7 @@
 
         socket.onmessage = function (event) {
             const chatBox = document.getElementById("chatBox");
+
             chatBox.value += event.data + "\n";
         };
 
@@ -125,7 +126,7 @@
             if (roomName !== "") {
                 const joinCommand = `/join ${roomName}`;
                 socket.send(joinCommand);
-                clearChatBox();
+                clearChatBox(roomName);
             }
         }
 
@@ -138,9 +139,9 @@
             }
         }
 
-        function clearChatBox() {
+        function clearChatBox(roomName) {
             const chatBox = document.getElementById("chatBox");
-            chatBox.value = "";
+            chatBox.value = `---Joined room: ${roomName}---\n`;
         }
         function toggleDarkMode() {
             const body = document.body;
