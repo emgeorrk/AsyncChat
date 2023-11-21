@@ -112,7 +112,7 @@
     </label>
 
     <script>
-        const socket = new WebSocket("ws://127.0.0.1:8888");
+        const socket = new WebSocket("ws://192.168.1.105:8888");
 
         socket.onmessage = function (event) {
             const chatBox = document.getElementById("chatBox");
@@ -146,7 +146,6 @@
         function toggleDarkMode() {
             const body = document.body;
             const container = document.querySelector('.container');
-            const messageInput = document.messageInput;
 
             body.classList.toggle('dark-theme');
             container.classList.toggle('dark-theme');

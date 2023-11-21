@@ -50,7 +50,7 @@ async def main():
     chat_server = ChatServer()
 
     async with websockets.serve(
-        chat_server.handle_client, '127.0.0.1', 8888
+        chat_server.handle_client, '192.168.1.105', 8888
     ):
         await asyncio.Future()  # Ждем завершения
 
