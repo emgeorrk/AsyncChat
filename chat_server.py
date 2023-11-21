@@ -5,6 +5,7 @@ class ChatServer:
     def __init__(self):
         self.clients = set()
         self.rooms = {}  # Комнаты и их участники
+        self.message_history = {}  # История сообщений
 
     async def handle_client(self, websocket, path):
         self.clients.add(websocket)
@@ -15,6 +16,7 @@ class ChatServer:
                 if message.startswith('/join'):
                     room_name = message.split(' ')[1]
                     self.join_room(websocket, room_name)
+                    await self.send_history(websocket, room_name)
                 else:
                     await self.broadcast(websocket, message)
         except websockets.exceptions.ConnectionClosedError:
@@ -32,8 +34,15 @@ class ChatServer:
                 for member in members:
                     try:
                         await member.send(message)
+                        self.message_history.setdefault(room, []).append(message)
                     except:
                         continue
+
+    async def send_history(self, client, room_name):
+        # Отправка истории сообщений новому участнику комнаты
+        history = self.message_history.get(room_name, [])
+        for message in history:
+            await client.send(message)
 
     def join_room(self, client, room_name):
         # Создание комнаты, если ее нет
