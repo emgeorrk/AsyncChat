@@ -21,6 +21,8 @@ class ChatServer:
                 elif message.startswith('/join'):
                     room_name = message.split(' ')[1]
                     await self.join_room(websocket, None, room_name)
+                elif message.startswith('/leave'):
+                    await self.broadcast(websocket, f'{username} left the room.', 'system')
                 else:
                     await self.broadcast(websocket, message, username)
         except websockets.exceptions.ConnectionClosedError:
@@ -59,18 +61,20 @@ class ChatServer:
 
         if username:
             self.rooms[room_name].add(client)
-            # Отправляем уведомление о входе в комнату только текущему пользователю
-            message_cont = {
-                'username': 'system',
-                'message': f'Joined room {room_name} as {username}'
-            }
-            await client.send(json.dumps(message_cont))
             # Отправляем историю сообщений текущему пользователю
             if room_name in self.message_history:
                 for message in self.message_history[room_name]:
                     await client.send(json.dumps(message))
+
+            message_cont = {
+                'username': 'system',
+                'message': f'{username} joined the room.'
+            }
+            await client.send(json.dumps(message_cont))
+            self.message_history.setdefault(room, []).append(message_cont)
         else:
             self.rooms[room_name].add(client)
+
 
 
 async def main():

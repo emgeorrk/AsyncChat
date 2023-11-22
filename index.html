@@ -6,8 +6,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>WebSocket Chat</title>
     <style>
+        .system {
+            color: red;
+        }
         .username {
-            /* Цвет имени пользователя */
             color: blue;
         }
         #chatBox::-webkit-scrollbar {
@@ -43,6 +45,12 @@
             border: none;
             border-radius: 4px;
             width: 80px;
+            height: 42px;
+        }
+
+        #chatContainer button {
+            margin: 0 auto;
+            display: block;
             height: 42px;
         }
 
@@ -157,12 +165,14 @@
     </div>
 
     <div class="container" id="chatContainer" style="display: none;">
+        <h1 id="roomTitle" class="title">Room: </h1>
         <div id="chatBox" placeholder="Chat messages will appear here..."></div>
         <br>
         <div style="display: flex;">
             <input type="text" id="messageInput" placeholder="Enter your message">
             <button onclick="sendMessage()">Send</button>
         </div>
+        <button onclick="goBack()">Back</button>
     </div>
 
     <label for="themeSwitch" style="margin-top: 20px;">
@@ -189,8 +199,16 @@
                 document.getElementById("authContainer").style.display = "none";
                 document.getElementById("chatContainer").style.display = "block";
                 currentRoom = roomName;
+
+                updateRoomTitle(roomName);
+
                 clearChatBox();
             }
+        }
+
+        function updateRoomTitle(roomName) {
+            const roomTitle = document.getElementById("roomTitle");
+            roomTitle.textContent = `Room: ${roomName}`;
         }
 
         socket.onmessage = function (event) {
@@ -202,13 +220,26 @@
                 console.log("parsing");
                 try {
                     const data = JSON.parse(event.data);
-                    const formattedMessage = `<span class='username'>${data.username}</span>: ${data.message}`;
+
+                    if (data.username !== "system") {
+                        formattedMessage = `<span class='username'>${data.username}</span>: ${data.message}`;
+                    } else {
+                        formattedMessage = `<span class='system'>${data.username}</span>: ${data.message}`;
+                    }
                     chatBox.innerHTML += formattedMessage + "<br>";
                 } catch (error) {
                     console.error("Error parsing JSON:", error);
                 }
             }
         };
+
+        function goBack() {
+            const joinCommand = `/leave`;
+            socket.send(joinCommand);
+            document.getElementById("authContainer").style.display = "block";
+            document.getElementById("chatContainer").style.display = "none";
+            clearChatBox();
+        }
 
         function sendMessage() {
             const messageInput = document.getElementById("messageInput");
