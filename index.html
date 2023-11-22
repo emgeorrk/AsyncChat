@@ -6,6 +6,27 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>WebSocket Chat</title>
     <style>
+        #messageInput {
+            flex: 1;
+            box-sizing: border-box;
+            margin-right: 5px;
+            display: flex;
+            width: 100%;
+        }
+        button {
+            flex: 0;
+            box-sizing: border-box;
+        }
+        .title {
+            text-align: center;
+        }
+        #authContainer {
+            text-align: center;
+        }
+
+        #authContainer label, #authContainer input, #authContainer button {
+            margin: 10px;
+        }
         body {
             font-family: Arial, sans-serif;
             margin: 0;
@@ -64,10 +85,7 @@
             background-color: #333;
         }
 
-        #roomInput {
-            background-color: #fff;
-        }
-        .dark-theme #roomInput {
+        .dark-theme #roomNameInput {
             color: white;
             background-color: #333;
         }
@@ -104,15 +122,16 @@
 </head>
 <body>
     <div class="container" id="authContainer">
-        <label for="usernameInput">Enter Your Name:</label>
+        <h1 class="title">Sign in</h1>
+        <br>
         <input type="text" id="usernameInput" placeholder="Your Name">
-        <button onclick="authenticate()">Join Chat</button>
+        <br>
+        <input type="text" id="roomNameInput" placeholder="Room Name">
+        <br>
+        <button onclick="authenticateAndJoin()">Join Chat</button>
     </div>
 
     <div class="container" id="chatContainer" style="display: none;">
-        <input type="text" id="roomInput" placeholder="Enter room name">
-        <button onclick="joinRoom()">Join Room</button>
-        <br>
         <textarea id="chatBox" placeholder="Chat messages will appear here..." disabled></textarea>
         <br>
         <input type="text" id="messageInput" placeholder="Enter your message">
@@ -127,48 +146,52 @@
     <script>
         const socket = new WebSocket("ws://192.168.1.105:8888");
         let username;
+        let currentRoom;
 
-        function authenticate() {
+        function authenticateAndJoin() {
             const usernameInput = document.getElementById("usernameInput");
+            const roomNameInput = document.getElementById("roomNameInput");
+
             username = usernameInput.value.trim();
-            if (username !== "") {
-                // Отправка имени пользователя на сервер
-                socket.send(`/auth ${username}`);
+            const roomName = roomNameInput.value.trim();
+
+            if (username !== "" && roomName !== "") {
+                // Отправка имени пользователя и комнаты на сервер
+                socket.send(`/auth ${username} ${roomName}`);
                 // Скрытие окна аутентификации и отображение чата
                 document.getElementById("authContainer").style.display = "none";
                 document.getElementById("chatContainer").style.display = "block";
+                currentRoom = roomName;
+                clearChatBox();
             }
         }
 
         socket.onmessage = function (event) {
             const chatBox = document.getElementById("chatBox");
-
             chatBox.value += event.data + "\n";
-        };
-
-        function joinRoom() {
-            const roomInput = document.getElementById("roomInput");
-            const roomName = roomInput.value.trim();
-            if (roomName !== "") {
-                const joinCommand = `/join ${roomName}`;
-                socket.send(joinCommand);
-                clearChatBox(roomName);
-            }
         }
 
         function sendMessage() {
             const messageInput = document.getElementById("messageInput");
             const message = messageInput.value.trim();
-            if (message !== "") {
+
+            if (username && message !== "") {
+                // Отправляем команду /join перед отправкой сообщения
+                const joinCommand = `/join ${currentRoom}`;
+                socket.send(joinCommand);
+
+                // Отправляем само сообщение
                 socket.send(message);
+
                 messageInput.value = "";
             }
         }
 
-        function clearChatBox(roomName) {
+        function clearChatBox() {
             const chatBox = document.getElementById("chatBox");
-            chatBox.value = `---Joined room: ${roomName}---\n`;
+            chatBox.value = `---Joined room: ${currentRoom}---\n`;
         }
+
         function toggleDarkMode() {
             const body = document.body;
             const container = document.querySelector('.container');
