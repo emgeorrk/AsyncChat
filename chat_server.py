@@ -1,4 +1,6 @@
 import asyncio
+import json
+
 import websockets
 
 class ChatServer:
@@ -31,15 +33,19 @@ class ChatServer:
 
     async def broadcast(self, sender, message, username):
         # Отправка сообщения всем участникам комнаты
+        message_cont = {
+            'username': username,
+            'message': message
+        }
         for room, members in self.rooms.items():
             if sender in members:
                 for member in members:
                     try:
-                        await member.send(f"{username}: {message}")
+                        await member.send(json.dumps(message_cont))
                     except:
                         continue
                 # Сохранение сообщения в истории
-                self.message_history.setdefault(room, []).append(f"{username}: {message}")
+                self.message_history.setdefault(room, []).append(message_cont)
 
     async def join_room(self, client, username, room_name):
         # Создание комнаты, если ее нет
@@ -54,11 +60,15 @@ class ChatServer:
         if username:
             self.rooms[room_name].add(client)
             # Отправляем уведомление о входе в комнату только текущему пользователю
-            await client.send(f"---Joined room: {room_name} as {username}---")
+            message_cont = {
+                'username': 'system',
+                'message': f'Joined room {room_name} as {username}'
+            }
+            await client.send(json.dumps(message_cont))
             # Отправляем историю сообщений текущему пользователю
             if room_name in self.message_history:
                 for message in self.message_history[room_name]:
-                    await client.send(message)
+                    await client.send(json.dumps(message))
         else:
             self.rooms[room_name].add(client)
 
