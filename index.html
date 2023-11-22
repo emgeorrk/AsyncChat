@@ -193,12 +193,12 @@
             const usernameInput = document.getElementById("usernameInput");
             const roomNameInput = document.getElementById("roomNameInput");
 
-            const username = usernameInput.value.trim();
+            username = usernameInput.value.trim();
             const roomName = roomNameInput.value.trim();
 
             if (username !== "" && roomName !== "") {
                 if (username.toLowerCase() === "system") {
-                    errorMessageElement.textContent = "This username is not allowed!";
+                    document.getElementById("usernameInput").style.backgroundColor = "#ff2e2e";
                     return;
                 }
                 socket.send(`/auth ${username} ${roomName}`);
@@ -223,13 +223,10 @@
         }
 
         function checkUsername(value) {
-
             if (value.toLowerCase() === "system") {
                 document.getElementById("usernameInput").style.backgroundColor = "#ff2e2e";
-                document.getElementById("joinChatButton").disabled = true;
             } else {
                 document.getElementById("usernameInput").style.backgroundColor = "";
-                document.getElementById("joinChatButton").disabled = false;
             }
         }
 
@@ -241,7 +238,8 @@
 
         socket.onmessage = function (event) {
             const chatBox = document.getElementById("chatBox");
-
+            console.log("onmessage:");
+            console.log(username);
             if (typeof(event) == "string") {
                 chatBox.value += event.data + "\n";
             } else {
@@ -262,8 +260,8 @@
         };
 
         function goBack() {
-            const joinCommand = `/leave`;
-            socket.send(joinCommand);
+            const leaveCommand = `/leave`;
+            socket.send(leaveCommand);
             document.getElementById("authContainer").style.display = "block";
             document.getElementById("chatContainer").style.display = "none";
             clearChatBox();
