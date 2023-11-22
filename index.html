@@ -147,6 +147,10 @@
         .dark-theme #chatContainer {
             background-color: #333;
         }
+        #usernameInput {
+            color: black;
+            background-color: white;
+        }
         .dark-theme #usernameInput {
             color: white;
             background-color: #333;
@@ -158,10 +162,8 @@
         <h1 class="title">Sign in</h1>
         <br>
         <input type="text" id="usernameInput" placeholder="Your Name" oninput="checkUsername(this.value)">
-        <div id="usernameErrorMessage" style="color: red;"></div>
         <br>
         <input type="text" id="roomNameInput" placeholder="Room Name" oninput="checkRoom(this.value)">
-        <div id="roomErrorMessage" style="color: red;"></div>
         <br>
         <button onclick="authenticateAndJoin()">Join Chat</button>
     </div>
@@ -190,8 +192,6 @@
         function authenticateAndJoin() {
             const usernameInput = document.getElementById("usernameInput");
             const roomNameInput = document.getElementById("roomNameInput");
-            const errorMessageElement = document.getElementById("usernameErrorMessage");
-            const errorMessageRoom = document.getElementById("roomErrorMessage");
 
             const username = usernameInput.value.trim();
             const roomName = roomNameInput.value.trim();
@@ -209,11 +209,10 @@
                 clearChatBox();
             } else {
                 if (username === "") {
-                    errorMessageElement.textContent = "Username is not specified";
+                    document.getElementById("usernameInput").style.backgroundColor = "#ff2e2e";
                 }
                 if (roomName === "") {
-                    errorMessageRoom.textContent = "Room is not specified";
-                    document.getElementById("joinChatButton").disabled = false;
+                    document.getElementById("roomNameInput").style.backgroundColor = "#ff2e2e";
                 }
             }
         }
@@ -224,22 +223,19 @@
         }
 
         function checkUsername(value) {
-            const errorMessageElement = document.getElementById("usernameErrorMessage");
 
             if (value.toLowerCase() === "system") {
-                errorMessageElement.textContent = "This username is not allowed!";
+                document.getElementById("usernameInput").style.backgroundColor = "#ff2e2e";
                 document.getElementById("joinChatButton").disabled = true;
             } else {
-                errorMessageElement.textContent = "";
+                document.getElementById("usernameInput").style.backgroundColor = "";
                 document.getElementById("joinChatButton").disabled = false;
             }
         }
 
         function checkRoom(value) {
-            const errorMessageRoom = document.getElementById("roomErrorMessage");
-
             if (value !== "") {
-                errorMessageRoom.textContent = "";
+                document.getElementById("roomNameInput").style.backgroundColor = "";
             }
         }
 
