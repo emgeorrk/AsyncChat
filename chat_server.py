@@ -70,8 +70,11 @@ class ChatServer:
                 'username': 'system',
                 'message': f'{username} joined the room.'
             }
-            await client.send(json.dumps(message_cont))
-            self.message_history.setdefault(room, []).append(message_cont)
+
+            await self.broadcast(client, f'{username} joined the room.', 'system')
+
+            # await client.send(json.dumps(message_cont))
+            # self.message_history.setdefault(room, []).append(message_cont)
         else:
             self.rooms[room_name].add(client)
 
