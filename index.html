@@ -157,9 +157,11 @@
     <div class="container" id="authContainer">
         <h1 class="title">Sign in</h1>
         <br>
-        <input type="text" id="usernameInput" placeholder="Your Name">
+        <input type="text" id="usernameInput" placeholder="Your Name" oninput="checkUsername(this.value)">
+        <div id="usernameErrorMessage" style="color: red;"></div>
         <br>
-        <input type="text" id="roomNameInput" placeholder="Room Name">
+        <input type="text" id="roomNameInput" placeholder="Room Name" oninput="checkRoom(this.value)">
+        <div id="roomErrorMessage" style="color: red;"></div>
         <br>
         <button onclick="authenticateAndJoin()">Join Chat</button>
     </div>
@@ -188,27 +190,57 @@
         function authenticateAndJoin() {
             const usernameInput = document.getElementById("usernameInput");
             const roomNameInput = document.getElementById("roomNameInput");
+            const errorMessageElement = document.getElementById("usernameErrorMessage");
+            const errorMessageRoom = document.getElementById("roomErrorMessage");
 
-            username = usernameInput.value.trim();
+            const username = usernameInput.value.trim();
             const roomName = roomNameInput.value.trim();
 
             if (username !== "" && roomName !== "") {
-                // Отправка имени пользователя и комнаты на сервер
+                if (username.toLowerCase() === "system") {
+                    errorMessageElement.textContent = "This username is not allowed!";
+                    return;
+                }
                 socket.send(`/auth ${username} ${roomName}`);
-                // Скрытие окна аутентификации и отображение чата
                 document.getElementById("authContainer").style.display = "none";
                 document.getElementById("chatContainer").style.display = "block";
                 currentRoom = roomName;
-
                 updateRoomTitle(roomName);
-
                 clearChatBox();
+            } else {
+                if (username === "") {
+                    errorMessageElement.textContent = "Username is not specified";
+                }
+                if (roomName === "") {
+                    errorMessageRoom.textContent = "Room is not specified";
+                    document.getElementById("joinChatButton").disabled = false;
+                }
             }
         }
 
         function updateRoomTitle(roomName) {
             const roomTitle = document.getElementById("roomTitle");
             roomTitle.textContent = `Room: ${roomName}`;
+        }
+
+        function checkUsername(value) {
+            const errorMessageElement = document.getElementById("usernameErrorMessage");
+
+            if (value.toLowerCase() === "system") {
+                errorMessageElement.textContent = "This username is not allowed!";
+                document.getElementById("joinChatButton").disabled = true;
+            } else {
+                errorMessageElement.textContent = "";
+                document.getElementById("joinChatButton").disabled = false;
+            }
+        }
+
+        function checkRoom(value) {
+            const errorMessageRoom = document.getElementById("roomErrorMessage");
+
+            if (value !== "") {
+                errorMessageRoom.textContent = "";
+            }
         }
 
         socket.onmessage = function (event) {
